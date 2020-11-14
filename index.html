@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        .mainTxt {
+            width: 680px;
+            height: 225px;
+            overflow: hidden;
+            float: left;
+            margin-right: 45px;
+            font-size: 21px;
+            line-height: 32px;
+
+            background-color: pink;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .wblack {
+            color: #000;
+        }
+
+        .wpassed {
+            color: #5bc538;
+        }
+
+        .wgreen {
+            background-color: #5bc538;
+            padding: 3px;
+            border-radius: 3px;
+            color: #fff;
+        }
+
+        .wred {
+            background-color: #fc0000;
+            padding: 3px;
+            border-radius: 3px;
+            color: #fff;
+        }
+        
+
+    </style>
+</head>
+<body>
+    
+    <div id="app">
+        
+        <div class="mainTxt">
+            <span 
+            v-for="(item, index) in message"
+            v-bind:class="[index == wGreenNow ? 'wgreen' : '', wGreenNow > index ? 'wpassed' : '', index > wGreenNow ? 'wblack' : '']"
+            >{{item}}</span>
+        </div>
+            
+        <div class="stat">
+            <span v-for="(stat, name) in stats">
+                {{ name }}: {{ stat }}
+            </span>
+
+        </div>
+            
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            message: 'Lorem ipsum',
+            wGreenNow: 0,
+            stats: {
+                WPM : 0,
+                Timer : 0
+            }
+        },
+        methods: {
+            test: () => {
+            },
+            start(){
+                interval_timer = setInterval( () => {
+                    this.stats.Timer ++;
+                    this.stats.WPM = Math.round(this.wGreenNow / (this.stats.Timer / 60));
+                }, 1000)
+                
+            },
+            stop() {
+                console.log('Стоп')
+                clearInterval(interval_timer);
+            },
+            keyPressed (key) {
+                let wGreenNowSymbol = document.querySelector('.wgreen');
+                let keyPressedNow = key.key;
+                if (keyPressedNow == 'Shift' || keyPressedNow == 'Backspace') {
+                    return
+                } else if (wGreenNowSymbol.textContent == keyPressedNow) {
+                    if (this.wGreenNow == 0) {
+                        this.start();
+                    }
+                    wGreenNowSymbol.classList.add('wpased')
+                    this.wGreenNow++
+                    if (this.wGreenNow == (this.message.length) ) {
+                        this.stop();
+                        return console.log('конец')
+                    }
+                } else {
+                    wGreenNowSymbol.classList.add('wred')
+                }
+            }
+        },
+        created: function () {
+            window.addEventListener('keydown', this.keyPressed)
+        },
+        beforeDestroy: function () {
+            window.removeEventListener('keydown', this.keyPressed)
+        },
+    })
+</script>
+</body>
+</html>
