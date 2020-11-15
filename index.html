@@ -9,7 +9,7 @@
             margin: 0;
             padding: 0;
         }
-        .mainTxt {
+        .mainText {
             width: 680px;
             height: 225px;
             overflow: hidden;
@@ -23,22 +23,22 @@
             border-radius: 5px;
         }
 
-        .wblack {
+        .blackW {
             color: #000;
         }
 
-        .wpassed {
+        .passedW {
             color: #5bc538;
         }
 
-        .wgreen {
+        .greenW {
             background-color: #5bc538;
             padding: 3px;
             border-radius: 3px;
             color: #fff;
         }
 
-        .wred {
+        .redW {
             background-color: #fc0000;
             padding: 3px;
             border-radius: 3px;
@@ -52,16 +52,16 @@
     
     <div id="app">
         
-        <div class="mainTxt">
+        <div class="mainText">
             <span 
             v-for="(item, index) in message"
-            v-bind:class="[index == wGreenNow ? 'wgreen' : '', wGreenNow > index ? 'wpassed' : '', index > wGreenNow ? 'wblack' : '']"
+            v-bind:class="[index == greenNow ? 'greenW' : '', greenNow > index ? 'passedW' : '', index > greenNow ? 'blackW' : '']"
             >{{item}}</span>
         </div>
             
         <div class="stat">
             <span v-for="(stat, name) in stats">
-                {{ name }}: {{ stat }}
+                {{ name }}: {{ name == 'Accuracy' ? stat += '%' : stat }}
             </span>
 
         </div>
@@ -74,10 +74,12 @@
         el: '#app',
         data: {
             message: 'Lorem, ipsum dolor sit amet consectetur adipisicing elit. Voluptatum, officia harum veritatis quo libero explicabo nesciunt voluptatibus, sapiente consequatur fuga tempore minima nemo laboriosam itaque nulla sequi, asperiores ex! Sequi!',
-            wGreenNow: 0,
+            greenNow: 0,
+            misses: 0,
             stats: {
                 WPM : 0,
-                Timer : 0
+                Timer : 0,
+                Accuracy: 100
             }
         },
         methods: {
@@ -86,7 +88,7 @@
             start(){
                 interval_timer = setInterval( () => {
                     this.stats.Timer ++;
-                    this.stats.WPM = Math.round(this.wGreenNow / (this.stats.Timer / 60));
+                    this.stats.WPM = Math.round(this.greenNow / (this.stats.Timer / 60));
                 }, 1000)
                 
             },
@@ -95,22 +97,26 @@
                 clearInterval(interval_timer);
             },
             keyPressed (key) {
-                let wGreenNowSymbol = document.querySelector('.wgreen');
+                let greenNowSymbol = document.querySelector('.greenW');
                 let keyPressedNow = key.key;
                 if (keyPressedNow == 'Shift' || keyPressedNow == 'Backspace') {
                     return
-                } else if (wGreenNowSymbol.textContent == keyPressedNow) {
-                    if (this.wGreenNow == 0) {
+                } else if (greenNowSymbol.textContent == keyPressedNow) {
+                    if (this.greenNow == 0) {
                         this.start();
                     }
-                    wGreenNowSymbol.classList.add('wpased')
-                    this.wGreenNow++
-                    if (this.wGreenNow == (this.message.length) ) {
+                    greenNowSymbol.classList.add('wpased')
+                    this.greenNow++
+                    if (this.greenNow == (this.message.length) ) {
                         this.stop();
                         return console.log('конец')
                     }
-                } else {
-                    wGreenNowSymbol.classList.add('wred')
+                } else if (greenNowSymbol.textContent != keyPressedNow) {
+                    if (!greenNowSymbol.classList.contains('redW')) {
+                        this.misses++;
+                        this.stats.Accuracy =  (this.stats.Accuracy - this.message.length/100).toFixed(1)
+                        greenNowSymbol.classList.add('redW')
+                    }
                 }
             }
         },
