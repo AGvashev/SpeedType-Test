@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <title>Speed Type Test</title>
     <style>
         * {
             margin: 0;
@@ -45,30 +48,60 @@
             color: #fff;
         }
         
-
     </style>
 </head>
 <body>
     
     <div id="app">
-        
-        <div class="mainText">
-            <span 
-            v-for="(item, index) in message"
-            v-bind:class="[index == greenNow ? 'greenW' : '', greenNow > index ? 'passedW' : '', index > greenNow ? 'blackW' : '']"
-            >{{item}}</span>
-        </div>
-            
-        <div class="stat">
-            <span v-for="(stat, name) in stats">
-                {{ name }}: {{ name == 'Accuracy' ? stat += '%' : stat }}
-            </span>
+        <v-container>
+            <v-row>
+                <v-col>
+                    <div class="mainText">
+                        <span 
+                        v-for="(item, index) in message"
+                        v-bind:class="[index == greenNow ? 'greenW' : '', greenNow > index ? 'passedW' : '', index > greenNow ? 'blackW' : '']"
+                        >{{item}}</span>
+                    </div>
+                </v-col>
 
-        </div>
-            
+                <v-col>
+                    <div class="stat">
+                            <v-card 
+                            v-for="(value, name) in stats"
+                            outlined
+                            shaped
+                            class="mx-auto"
+                            max-width="300"
+                            >
+                                
+                                <v-card-title>
+                                    <v-icon
+                                        color
+                                        dense
+                                        medium
+                                    >
+                                        {{name == 'WPM' ? 'fas fa-tachometer-alt' : 
+                                            name == 'Timer' ? 'far fa-clock' : 
+                                            name == 'Accuracy' ? 'fas fa-percentage' : ''}}
+                                    </v-icon>
+                                    {{  
+                                        name == 'WPM' ? 'Скорость' : 
+                                        name == 'Timer' ? 'Время' : 
+                                        name == 'Accuracy' ? 'Точность' : '' 
+                                    }}
+                                    :
+                                    {{value}}
+                                </v-card-title>
+                            </v-card>
+                    </div>
+                </v-col>  
+            </v-row>
+        </v-container>
     </div>
 
+<script src="https://kit.fontawesome.com/4ee5f380c2.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
 <script>
     var app = new Vue({
         el: '#app',
@@ -114,7 +147,11 @@
                 } else if (greenNowSymbol.textContent != keyPressedNow) {
                     if (!greenNowSymbol.classList.contains('redW')) {
                         this.misses++;
-                        this.stats.Accuracy =  (this.stats.Accuracy - this.message.length/100).toFixed(1)
+
+                        this.stats.Accuracy <= 0 ? 
+                        this.stats.Accuracy = 0 : 
+                        this.stats.Accuracy = (this.stats.Accuracy - this.message.length/100).toFixed(1);
+
                         greenNowSymbol.classList.add('redW')
                     }
                 }
