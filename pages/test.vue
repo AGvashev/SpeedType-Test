@@ -1,6 +1,30 @@
 <template>
   <v-container>
-    <v-row>
+    <v-dialog
+      v-model="startModal"
+      persistent
+      max-width="600"
+    >
+      <v-card class="blue lighten-5">
+        <v-card-title class="headline mx-auto" style="width:85%;">
+          Нажимай на кнопку и начинай печатать!
+        </v-card-title>
+        <v-card-text>
+          После нажатия на кнопку, начинай печатать. Старайся допускать наименьшее колличество ошибок
+        </v-card-text>
+        <v-card-actions>
+          <v-btn
+            color="green lighten-4"
+            class="mx-auto"
+            elevation="2"
+            @click="startModal = false"
+          >
+            Начать.
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-row v-if="!textEnd">
       <v-col>
         <div class="mainText">
           <span
@@ -23,14 +47,14 @@
           >
             <v-card-title>
               <v-icon
-                color
                 dense
                 medium
+                class="px-1"
               >
                 {{
-                  name == 'WPM' ? 'fas fa-tachometer-alt' :
-                  name == 'Timer' ? 'far fa-clock' :
-                  name == 'Accuracy' ? 'fas fa-percentage' : ''
+                  name == 'WPM' ? 'mdi-speedometer' :
+                  name == 'Timer' ? 'mdi-timer' :
+                  name == 'Accuracy' ? 'mdi-checkbox-marked-circle-outline' : ''
                 }}
               </v-icon>
               {{
@@ -44,6 +68,33 @@
           </v-card>
         </div>
       </v-col>
+    </v-row>
+    <v-row v-if="textEnd">
+        Отлично! Твои результаты:
+      <v-card 
+      v-for="(value, name) in stats"
+      :key="name"
+      class="mx-2 px-2"
+      >
+        <v-icon
+          dense
+          medium
+          class="mx-2 pa-2"
+        >
+          {{
+            name == 'WPM' ? 'mdi-speedometer' :
+            name == 'Timer' ? 'mdi-timer' :
+            name == 'Accuracy' ? 'mdi-checkbox-marked-circle-outline' : ''
+          }}
+        </v-icon>
+        {{
+          name == 'WPM' ? 'Скорость' :
+          name == 'Timer' ? 'Время' :
+          name == 'Accuracy' ? 'Точность' : ''
+        }}
+        :
+        {{ value }}
+      </v-card>
     </v-row>
   </v-container>
 </template>
@@ -64,6 +115,8 @@ export default {
         this.stats.Timer++
         this.stats.WPM = Math.round(this.greenNow / (this.stats.Timer / 60))
       },
+      startModal: true,
+      endModal: false,
       textEnd: false
     }
   },
@@ -87,6 +140,9 @@ export default {
       const keyPressedNow = key.key
       if (this.textEnd == true) {
           return
+      }
+      if (this.startModal == true) {
+        return
       }
       if (keyPressedNow === 'Shift' || keyPressedNow === 'Backspace') {
       } else if (greenNowSymbol.textContent === keyPressedNow) {

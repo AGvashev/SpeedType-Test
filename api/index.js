@@ -3,10 +3,6 @@ const express = require('express')
 // Create express instance
 const app = express()
 
-// Import API Routes
-app.use(users)
-app.use(test)
-
 // Export express app
 module.exports = app
 
