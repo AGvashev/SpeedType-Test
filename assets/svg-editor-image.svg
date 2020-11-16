@@ -1,0 +1,20 @@
+<svg width="419.99999999999994" height="120" xmlns="http://www.w3.org/2000/svg">
+ <!-- Created with SVG Editor - http://github.com/mzalive/SVG Editor/ -->
+
+ <g>
+  <g id="canvasGrid" display="none">
+   <rect id="svg_3" width="580" height="400" stroke-width="0" fill="url(#gridpattern)"/>
+  </g>
+ </g>
+ <g>
+  <title>Layer 1</title>
+  <text fill="#000000" stroke="#000" stroke-width="0" x="38.676353" y="71.907729" id="svg_1" font-size="39" font-family="Arvo, sans-serif" text-anchor="start" xml:space="preserve">SPEED TYPE TEST</text>
+  <text fill="#000000" stroke-width="0" x="114.691024" y="114.837404" id="svg_2" font-size="18" font-family="Arvo, sans-serif" text-anchor="start" xml:space="preserve" stroke="#000">TYPING FAST IS EASY</text>
+  <path fill="#000000" stroke="#000" stroke-width="2" stroke-opacity="null" fill-opacity="0" opacity="0.5" d="m3.928595,3.73027" id="svg_6"/>
+  <line fill="none" stroke="#000" stroke-width="2" stroke-opacity="null" fill-opacity="0" x1="4.642885" y1="3.730273" x2="4.642885" y2="106.708861" id="svg_7" stroke-linejoin="null" stroke-linecap="null"/>
+  <line fill="none" stroke="#000" stroke-width="2" stroke-opacity="null" fill-opacity="0" x1="416.071411" y1="3.730273" x2="3.888987" y2="3.730273" id="svg_8" stroke-linejoin="null" stroke-linecap="null"/>
+  <line fill="none" stroke="#000" stroke-width="2" stroke-opacity="null" fill-opacity="0" x1="415.357125" y1="108.730262" x2="415.357125" y2="3.730273" id="svg_9" stroke-linejoin="null" stroke-linecap="null"/>
+  <line fill="none" stroke="#000" stroke-width="2" stroke-opacity="null" fill-opacity="0" x1="4.642885" y1="105.873119" x2="111.093015" y2="105.873119" id="svg_14" stroke-linejoin="null" stroke-linecap="null"/>
+  <line fill="none" stroke="#000" stroke-width="2" stroke-opacity="null" fill-opacity="0" x1="416.071411" y1="108.015976" x2="307.497645" y2="108.015976" id="svg_16" stroke-linejoin="null" stroke-linecap="null"/>
+ </g>
+</svg>
