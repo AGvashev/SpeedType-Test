@@ -42,19 +42,18 @@
     >
       Зарегестрироваться
     </v-btn>
-    
-    <v-btn
-      color="error"
-      class="mr-4"
-      @click="test"
-    >
-      teset
-    </v-btn>
   </v-form>
 </template>
 <script>
 export default {
     layout: 'main_layout',
+    mounted() {
+      this.$fire.auth.onAuthStateChanged(user => {
+        if (user) {
+          this.$router.push('/profile')
+        }
+      })
+    },
     data () {
         return { 
         valid: true,
@@ -84,16 +83,13 @@ export default {
                 await this.$fire.auth.createUserWithEmailAndPassword(this.email, this.password)
                 const uid = await this.$fire.auth.currentUser.uid
                 this.$fire.database.ref(`/users/${uid}/info`).set({
-                    name: userName
+                    name: userName,
+                    avatarURL: 'default_avatar.png'
                 })
                 this.$router.push('/profile')
             } catch (error) {
                 console.log(error)
             }
-        },
-        test() {
-            
-            
         }
     }
 }

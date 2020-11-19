@@ -45,11 +45,11 @@
                         size="70"
                         >
                           <img
-                            src="https://d3t3ozftmdmh3i.cloudfront.net/production/podcast_uploaded_episode/773/773-1553448700813-e68e026ee0a3.jpg"
+                            :src='userImage'
                             alt="Eliot Anderson"
                           >
                         </v-avatar>
-                        <span class="px-1">Eliot Anderson</span>
+                        <span class="px-1">{{ userName }}</span>
                       </v-card-title>
                     </v-card>
                   </template>
@@ -61,7 +61,9 @@
                       </NuxtLink>
                     </v-list-item>
                     <v-list-item link>
+                      <NuxtLink class="text-decoration-none black--text" to='/settings'>
                       <v-list-item-title>Настройки</v-list-item-title>
+                      </NuxtLink>
                     </v-list-item>
                     <v-list-item link @click='logout'>
                       <v-list-item-title>Выход</v-list-item-title>
@@ -89,7 +91,9 @@ export default {
     data() {
       return {
         loggedIn: false,
-        showMenu: false
+        showMenu: false,
+        userName: '',
+        userImage: '',
       }
     },
     methods: {
@@ -106,8 +110,18 @@ export default {
             this.$fire.auth.currentUser.getIdToken(true)
               .then( token => {
                 Cookies.set('access_token', token)
-              })
+            })
+            const uid = this.$fire.auth.currentUser.uid
             
+            this.$fire.database.ref(`/users/${uid}/info`).once('value')
+              .then( (data) => {
+                this.userName = data.val().name
+                this.$fire.storage.ref(data.val().avatarURL).getDownloadURL()
+                  .then( (img) => {
+                      this.userImage = img
+                  })
+            })
+
           } else {
             this.loggedIn = false
             Cookies.remove('access_token')

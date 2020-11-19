@@ -7,12 +7,12 @@
 <script>
 export default {
   layout: 'main_layout',
-  created() {
-    let user = this.$fire.auth.currentUser
-    if (!user) {
-        console.log('Пользователь не вошел в систему')
-        this.$router.push('/login')
-    }  
+  mounted() {
+      this.$fire.auth.onAuthStateChanged(user => {
+        if (user) {
+          this.$router.push('/profile')
+        }
+      })
   },
   data() {
     return {

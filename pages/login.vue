@@ -45,6 +45,13 @@
 <script>
 export default {
   layout: 'main_layout',
+  mounted() {
+      this.$fire.auth.onAuthStateChanged(user => {
+        if (user) {
+          this.$router.push('/profile')
+        }
+      })
+  },
   data() {
     return {
       err: false,
@@ -69,7 +76,6 @@ export default {
                 this.$router.push('/home')
             })
             .catch(err => {
-                console.log(err)
                 this.err = true
                 setTimeout(() => {
                   this.err = false
