@@ -6,6 +6,7 @@
 </template>
 <script>
 export default {
+  layout: 'main_layout',
   data() {
     return {
 

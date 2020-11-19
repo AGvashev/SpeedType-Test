@@ -17,7 +17,6 @@
                 <NuxtLink class="text-decoration-none mx-5 white--text" to="/home">
                   Home page
                 </NuxtLink>
-
                 <NuxtLink class="text-decoration-none mx-5 white--text" to="/test">
                   Test page
                 </NuxtLink>
@@ -25,45 +24,51 @@
 
               <v-spacer></v-spacer>
 
-          <v-hover>
-            <v-menu
-              v-model="showMenu"
-              absolute
-              offset-y
-              style="max-width: 600px"
-            > 
-              <template v-slot:activator="{ on }">
-                <v-card 
-                class="rounded-xl text-lg-h6 white--text blue darken-2"
-                v-on="on"
-                >
-                  <v-card-title class="pa-2">
-                    <v-avatar
-                    size="70"
-                    >
-                      <img
-                        src="https://d3t3ozftmdmh3i.cloudfront.net/production/podcast_uploaded_episode/773/773-1553448700813-e68e026ee0a3.jpg"
-                        alt="Eliot Anderson"
-                      >
-                    </v-avatar>
-                    <span class="px-1">Eliot Anderson</span>
-                  </v-card-title>
-                </v-card>
-              </template>
+              <NuxtLink v-if="!loggedIn" class="text-decoration-none mx-5 white--text" to="/login">
+                  Login or registration
+              </NuxtLink>
 
-              <v-list>
-                <v-list-item link>
-                  <v-list-item-title>Профиль</v-list-item-title>
-                </v-list-item>
-                <v-list-item link>
-                  <v-list-item-title>Настройки</v-list-item-title>
-                </v-list-item>
-                <v-list-item link>
-                  <v-list-item-title>Выход</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-          </v-hover>
+              <v-hover v-if="loggedIn">
+                <v-menu
+                  v-model="showMenu"
+                  absolute
+                  offset-y
+                  style="max-width: 600px"
+                > 
+                  <template v-slot:activator="{ on }">
+                    <v-card 
+                    class="rounded-xl text-lg-h6 white--text blue darken-2"
+                    v-on="on"
+                    >
+                      <v-card-title class="pa-2">
+                        <v-avatar
+                        size="70"
+                        >
+                          <img
+                            src="https://d3t3ozftmdmh3i.cloudfront.net/production/podcast_uploaded_episode/773/773-1553448700813-e68e026ee0a3.jpg"
+                            alt="Eliot Anderson"
+                          >
+                        </v-avatar>
+                        <span class="px-1">Eliot Anderson</span>
+                      </v-card-title>
+                    </v-card>
+                  </template>
+
+                  <v-list>
+                    <v-list-item link>
+                      <NuxtLink class="text-decoration-none black--text" to='/profile'>
+                        <v-list-item-title>Профиль</v-list-item-title>
+                      </NuxtLink>
+                    </v-list-item>
+                    <v-list-item link>
+                      <v-list-item-title>Настройки</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item link @click='logout'>
+                      <v-list-item-title>Выход</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </v-hover>
 
               
 
@@ -72,10 +77,42 @@
 </template>
 
 <script>
+import Cookies from 'js-cookie'
 export default {
+    mounted() {
+      this.$nextTick(() => {
+        this.$nuxt.$loading.start()
+        setTimeout(() => this.$nuxt.$loading.finish(), 2000)
+      })
+      this.setupFirebase()
+    },
     data() {
       return {
+        loggedIn: false,
         showMenu: false
+      }
+    },
+    methods: {
+      logout() {
+        this.$fire.auth.signOut().then(() => {
+          this.$router.push('/home')
+        })
+      },
+      setupFirebase() {
+        this.$fire.auth.onAuthStateChanged(user => {
+          if (user) {
+            console.log('Пользователь залогинился')
+            this.loggedIn = true
+            this.$fire.auth.currentUser.getIdToken(true)
+              .then( token => {
+                Cookies.set('access_token', token)
+              })
+            
+          } else {
+            this.loggedIn = false
+            Cookies.remove('access_token')
+          }
+        })
       }
     }
 }

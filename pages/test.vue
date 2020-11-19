@@ -101,6 +101,7 @@
 <script>
 
 export default {
+  layout: 'main_layout',
   data () {
     return {
       message: 'Lorem, ipsum dolor',
@@ -121,12 +122,6 @@ export default {
     }
   },
   methods: {
-    created () {
-      window.addEventListener('keydown', this.keyPressed)
-    },
-    beforeDestroy () {
-      window.removeEventListener('keydown', this.keyPressed)
-    },
     test: () => {
     },
     start () {
@@ -142,6 +137,9 @@ export default {
           return
       }
       if (this.startModal == true) {
+        if (keyPressedNow == 'Enter') {
+          return this.startModal = false
+        }
         return
       }
       if (keyPressedNow === 'Shift' || keyPressedNow === 'Backspace') {
@@ -164,9 +162,12 @@ export default {
       }
     }
   },
-  mounted () {
-    this.created()
-  }
+  created () {
+    window.addEventListener('keydown', this.keyPressed)
+    },
+  beforeDestroy () {
+    window.removeEventListener('keydown', this.keyPressed)
+  },
 }
 </script>
 

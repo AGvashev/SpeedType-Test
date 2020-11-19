@@ -18,11 +18,13 @@
         <v-footer app>
           <span>Это у нас футер</span>
         </v-footer>
+        
       </v-app>
   </div>
 </template>
 <script>
 export default {
+
 }
 </script>
 <style>

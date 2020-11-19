@@ -1,5 +1,7 @@
 
 export default {
+  loading: '~/components/pre-loader.vue',
+
   /*
   ** Nuxt rendering mode
   ** See https://nuxtjs.org/api/configuration-mode
@@ -61,7 +63,26 @@ export default {
   */
   modules: [
     // Doc: https://http.nuxtjs.org
-    '@nuxt/http'
+    '@nuxt/http',
+    // firebase
+    [
+    '@nuxtjs/firebase',
+      {
+        config: {
+          apiKey: "...",
+          authDomain: "...",
+          databaseURL: "...",
+          projectId: "...",
+          storageBucket: "...",
+          messagingSenderId: "...",
+          appId: "..."
+        },
+        services: {
+          auth: true, // Just as example. Can be any other service.
+          database: true,
+        }
+      }
+    ]
   ],
 
   /*
