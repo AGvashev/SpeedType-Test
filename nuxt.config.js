@@ -19,10 +19,9 @@ export default {
   ** See https://nuxtjs.org/api/configuration-head
   */
   head: {
-    title: process.env.npm_package_name || '',
+    title: 'Speed Type Test',
     meta: [
       { charset: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { hid: 'description', name: 'description', content: process.env.npm_package_description || '' }
     ],
     link: [
@@ -70,13 +69,7 @@ export default {
     '@nuxtjs/firebase',
       {
         config: {
-          apiKey: "...",
-          authDomain: "...",
-          databaseURL: "...",
-          projectId: "...",
-          storageBucket: "...",
-          messagingSenderId: "...",
-          appId: "..."
+          
         },
         services: {
           auth: true, // Just as example. Can be any other service.
