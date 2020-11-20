@@ -18,6 +18,7 @@
         <v-text-field
         v-model="newUserName"
         label="Username"
+        placeholder="Введи новое имя"
         :rules="usernameRules"
       ></v-text-field>
       <v-btn @click="this.changeUsername">
@@ -51,7 +52,7 @@ export default {
         if (!user) {
           this.$router.push('/login')
         }
-      })  
+    })  
   },
   data() {
     return {

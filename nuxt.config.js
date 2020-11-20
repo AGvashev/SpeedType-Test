@@ -69,13 +69,13 @@ export default {
     '@nuxtjs/firebase',
       {
         config: {
-          apiKey: "...",
-          authDomain: "...",
-          databaseURL: "...",
-          projectId: "...",
-          storageBucket: "...",
-          messagingSenderId: "...",
-          appId: "..."
+          apiKey: "AIzaSyDU8luGAbSgsHI5Da8YzWVjEVp4m_FE-Mw",
+          authDomain: "speed-type-test.firebaseapp.com",
+          databaseURL: "https://speed-type-test.firebaseio.com",
+          projectId: "speed-type-test",
+          storageBucket: "speed-type-test.appspot.com",
+          messagingSenderId: "85880376687",
+          appId: "1:85880376687:web:ff922eb7f373b258c3ac9a"
         },
         services: {
           auth: true, // Just as example. Can be any other service.

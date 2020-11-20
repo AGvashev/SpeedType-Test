@@ -66,35 +66,78 @@
               {{ value }}
             </v-card-title>
           </v-card>
+            <v-btn
+              elevation="2"
+              class="my-2"
+              @click="newTest"
+            >
+              Начать заного
+            </v-btn>
         </div>
+        
       </v-col>
     </v-row>
     <v-row v-if="textEnd">
-        Отлично! Твои результаты:
-      <v-card 
-      v-for="(value, name) in stats"
-      :key="name"
-      class="mx-2 px-2"
-      >
-        <v-icon
-          dense
-          medium
-          class="mx-2 pa-2"
+      <v-row>
+        <v-alert
+          v-if="userAuth == false"
+          type="warning"
+        >Войди в аккаунт, для того что бы твои результаты сохранились</v-alert>
+      </v-row>
+      <v-row>
+        <span class="text-lg-h6">Отлично! Твои результаты:</span>
+        <v-card 
+        v-for="(value, name) in stats"
+        :key="name"
+        class="mx-2 px-2"
         >
+
+        <div class="overline colontintul" v-if="newRecordWpm">
+            {{
+              name == 'WPM' ? 'Новый рекород!' : ''
+            }}
+        </div>
+
+        <div class="overline colontintul" v-if="newRecordWpm">
           {{
-            name == 'WPM' ? 'mdi-speedometer' :
-            name == 'Timer' ? 'mdi-timer' :
-            name == 'Accuracy' ? 'mdi-checkbox-marked-circle-outline' : ''
+            name == 'Timer' ? 'Новый рекород!' : ''
           }}
-        </v-icon>
-        {{
-          name == 'WPM' ? 'Скорость' :
-          name == 'Timer' ? 'Время' :
-          name == 'Accuracy' ? 'Точность' : ''
-        }}
-        :
-        {{ value }}
-      </v-card>
+        </div>
+
+        <div class="overline colontintul" v-if="newRecordAcc">
+            {{
+              name == 'Accuracy' ? 'Новый рекород!' : ''
+            }}
+        </div>
+
+          <v-icon
+            dense
+            medium
+            class="mx-2 pa-2"
+          >
+            {{
+              name == 'WPM' ? 'mdi-speedometer' :
+              name == 'Timer' ? 'mdi-timer' :
+              name == 'Accuracy' ? 'mdi-checkbox-marked-circle-outline' : ''
+            }}
+          </v-icon>
+          {{
+            name == 'WPM' ? 'Скорость' :
+            name == 'Timer' ? 'Время' :
+            name == 'Accuracy' ? 'Точность' : ''
+          }}
+          :
+          {{ value }}
+        </v-card>
+            <v-btn
+              elevation="2"
+              class="my-2"
+              @click="newTest"
+            >
+              Начать заного
+            </v-btn>
+      </v-row>
+      
     </v-row>
   </v-container>
 </template>
@@ -112,23 +155,28 @@ export default {
         Timer: 0,
         Accuracy: 100
       },
+      newRecordAcc: false,
+      newRecordWpm: false,
+      newRecordTime: false,
       timer: () => {
         this.stats.Timer++
         this.stats.WPM = Math.round(this.greenNow / (this.stats.Timer / 60))
       },
       startModal: true,
       endModal: false,
-      textEnd: false
+      textEnd: false,
+      userAuth: false,
     }
   },
   methods: {
-    test: () => {
+    newTest () {
+      window.location.reload(true)
     },
     start () {
-      this.timer = setInterval(this.timer, 1000)
+      const Timer = setInterval(this.timer, 1000)
     },
     stop () {
-      clearInterval(this.timer)
+      clearInterval(this.Timer)
     },
     keyPressed (key) {
       const greenNowSymbol = document.querySelector('.greenW')
@@ -150,8 +198,45 @@ export default {
         greenNowSymbol.classList.add('wpased')
         this.greenNow++
         if (this.greenNow === (this.message.length)) {
-          this.textEnd = true
           this.stop()
+          this.textEnd = true
+          if (this.userAuth == true) {
+            const uid = this.$fire.auth.currentUser.uid
+            this.$fire.database.ref(`/users/${uid}/results`).once('value')
+              .then( (data) => {
+                if (data.val() == null) {
+                  this.$fire.database.ref(`/users/${uid}/results`).set({
+                      gamePlayed: 1,
+                      bestWpm: this.stats.WPM ,
+                      bestAcuuracy: this.stats.Accuracy,
+                      bestTime: this.stats.Timer
+                  })
+                } else {
+                      this.$fire.database.ref(`/users/${uid}/results`).update({
+                          gamePlayed: data.val().gamePlayed += 1
+                      })
+                      if (this.stats.Accuracy > data.val().bestAcuuracy) {
+                        this.newRecordAcc = true
+                        this.$fire.database.ref(`/users/${uid}/results`).update({
+                            bestAcuuracy: this.stats.Accuracy
+                        })
+                      }
+                      if (this.stats.WPM > data.val().bestWpm) {
+                        this.newRecordWpm = true
+                        this.$fire.database.ref(`/users/${uid}/results`).update({
+                            bestWpm: this.stats.WPM
+                        })
+                      }
+                      if (this.stats.Timer < data.val().bestTime) {
+                        this.newRecordTime = true
+                        this.$fire.database.ref(`/users/${uid}/results`).update({
+                            bestTime: this.stats.Timer
+                        })
+                      }
+                }
+            })
+          }
+                
         }
       } else if (greenNowSymbol.textContent !== keyPressedNow) {
         if (!greenNowSymbol.classList.contains('redW')) {
@@ -162,16 +247,28 @@ export default {
       }
     }
   },
-  created () {
-    window.addEventListener('keydown', this.keyPressed)
-    },
+  mounted () {
+        window.addEventListener('keydown', this.keyPressed)
+        this.$fire.auth.onAuthStateChanged(user => {
+              if (!user) {
+                console.log('Пользователь не авторизирован')
+              } else {
+                this.userAuth = true;
+              }
+          }) 
+  },
   beforeDestroy () {
-    window.removeEventListener('keydown', this.keyPressed)
+      window.removeEventListener('keydown', this.keyPressed)
   },
 }
 </script>
 
 <style scoped>
+.colontintul {
+  position: absolute;
+  top: -20px;
+  left: 0;
+}
         .mainText {
             width: 680px;
             height: 225px;

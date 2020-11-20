@@ -7,6 +7,11 @@
 <script>
 export default {
   layout: 'main_layout',
+  socket: {
+    connect() {
+      console.log('Client connected')
+    }
+  },
   data() {
     return {
 
