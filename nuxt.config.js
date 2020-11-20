@@ -41,6 +41,7 @@ export default {
   ** https://nuxtjs.org/guide/plugins
   */
   plugins: [
+    { src: '~/plugins/socket', ssr: false}
   ],
 
   /*
@@ -69,13 +70,13 @@ export default {
     '@nuxtjs/firebase',
       {
         config: {
-          apiKey: "AIzaSyDU8luGAbSgsHI5Da8YzWVjEVp4m_FE-Mw",
-          authDomain: "speed-type-test.firebaseapp.com",
-          databaseURL: "https://speed-type-test.firebaseio.com",
-          projectId: "speed-type-test",
-          storageBucket: "speed-type-test.appspot.com",
-          messagingSenderId: "85880376687",
-          appId: "1:85880376687:web:ff922eb7f373b258c3ac9a"
+          apiKey: "...",
+          authDomain: "...",
+          databaseURL: "...",
+          projectId: "...",
+          storageBucket: "...",
+          messagingSenderId: "...",
+          appId: "..."
         },
         services: {
           auth: true, // Just as example. Can be any other service.
@@ -83,7 +84,7 @@ export default {
           storage: true,
         }
       }
-    ]
+    ],
   ],
 
   /*

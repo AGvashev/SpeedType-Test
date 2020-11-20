@@ -1,15 +1,12 @@
-const express = require('express')
+const app = require('express')();
+const server = require('http').createServer(app);
+const io = require("socket.io")(server);
 
-// Create express instance
-const app = express()
+io.on('connection', socket=> {
+  console.log('Server say: user connected')
+})
 
-// Export express app
-module.exports = app
-
-// Start standalone server if directly running
-if (require.main === module) {
-  const port = process.env.PORT || 3001
-  app.listen(port, () => {
-    console.log(`server server listening on port ${port}`)
-  })
-}
+const port = process.env.PORT || 3001
+server.listen(port, () => {
+  console.log(`Server listening on port ${port}`)
+})
