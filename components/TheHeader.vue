@@ -20,6 +20,9 @@
                 <NuxtLink class="text-decoration-none mx-5 white--text" to="/test">
                   Test page
                 </NuxtLink>
+                <NuxtLink class="text-decoration-none mx-5 white--text" to="/testing">
+                  Crash test page
+                </NuxtLink>
               </div>
 
               <v-spacer></v-spacer>
