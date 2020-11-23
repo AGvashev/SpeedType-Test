@@ -204,14 +204,6 @@ export default {
             const uid = this.$fire.auth.currentUser.uid
             this.$fire.database.ref(`/users/${uid}/results`).once('value')
               .then( (data) => {
-                if (data.val() == null) {
-                  this.$fire.database.ref(`/users/${uid}/results`).set({
-                      gamePlayed: 1,
-                      bestWpm: this.stats.WPM ,
-                      bestAcuuracy: this.stats.Accuracy,
-                      bestTime: this.stats.Timer
-                  })
-                } else {
                       this.$fire.database.ref(`/users/${uid}/results`).update({
                           gamePlayed: data.val().gamePlayed += 1
                       })
@@ -233,7 +225,6 @@ export default {
                             bestTime: this.stats.Timer
                         })
                       }
-                }
             })
           }
                 

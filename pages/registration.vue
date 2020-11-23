@@ -86,6 +86,12 @@ export default {
                     name: userName,
                     avatarURL: 'default_avatar.png'
                 })
+                await this.$fire.database.ref(`/users/${uid}/results`).set({
+                      gamePlayed: 1,
+                      bestWpm: this.stats.WPM ,
+                      bestAcuuracy: this.stats.Accuracy,
+                      bestTime: this.stats.Timer
+                  })
                 this.$router.push('/profile')
             } catch (error) {
                 console.log(error)

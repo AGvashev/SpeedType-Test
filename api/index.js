@@ -3,18 +3,52 @@ const server = require('http').createServer(app);
 const io = require("socket.io")(server);
 
 let clientNo = 0;
+let testRooms = [];
 
 io.on('connection', socket => {
   console.log('Server IO say: user connected')
 
   // Сокеты testVS
-  socket.on('roomCreated', (room)=> {
-    console.log(room)
-    socket.broadcast.emit('roomsFromServer', room)
+  socket.on('roomCreated', (data)=> {
+      let error = false
+      if (!data.userAuth) return socket.emit('errorFromServer', 'Вы не авторизировались')
+      testRooms.forEach( el=> {
+        if (el.userName == data.userName) {
+          error = true
+          return socket.emit('errorFromServer', 'Нельзя создать больше одной комнаты')
+        } else if (el.roomName == data.roomName) {
+          error = true
+          return socket.emit('errorFromServer', 'Название комнаты уже занято')
+        }
+      })
+      if (!error) {
+        testRooms.push(data)
+        io.emit('roomsCreateFromServer', data)
+      }
+  })
+  
+  socket.on('roomDelete', (roomIndex)=> {
+    testRooms.splice(roomIndex, 1)
+    io.emit('roomsDeleteFromServer', roomIndex)
+  })
+  
+  socket.on('joinedInRoom', data => {
+    let error = false
+    if (!data.userAuth) return socket.emit('errorFromServer', 'Вы не авторизировались')
+    console.log(testRooms[data.roomIndex].userName == data.joinedUserName)
+    if (testRooms[data.roomIndex].userName == data.joinedUserName) return socket.emit('errorFromServer', 'Вы не можете войти в свою комнату')
+    testRooms[data.roomIndex].joinedUserName = data.joinedUserName
+    testRooms[data.roomIndex].joinedUserImage = data.joinedUserImage
+    io.emit('joinedRoomFromServer', data)
   })
 
+  socket.on('userConnectedInTestPVP', () => {
+    socket.emit('roomsFromServer', testRooms)
+  })
+
+
   // Сокеты testVSroom
-  socket.on('userConnected', ()=> {
+  socket.on('userJoinRoom', ()=> {
     console.log('Server IO say: user join in a room')
     clientNo++;
     socket.join(Math.round(clientNo/2))

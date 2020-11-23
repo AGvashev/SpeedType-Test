@@ -97,7 +97,7 @@ export default {
         
     },
     mounted() {
-        this.$socket.emit('userConnected')
+        this.$socket.emit('userJoinRoom')
         window.addEventListener('keydown', this.keyPressed)
     },
     beforeDestroy () {
