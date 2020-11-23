@@ -20,8 +20,8 @@
                 <NuxtLink class="text-decoration-none mx-5 white--text" to="/test">
                   Test page
                 </NuxtLink>
-                <NuxtLink class="text-decoration-none mx-5 white--text" to="/testing">
-                  Crash test page
+                <NuxtLink class="text-decoration-none mx-5 white--text" to="/testVS">
+                  PVP Test
                 </NuxtLink>
               </div>
 

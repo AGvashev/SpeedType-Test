@@ -6,7 +6,14 @@ let clientNo = 0;
 
 io.on('connection', socket => {
   console.log('Server IO say: user connected')
-  
+
+  // Сокеты testVS
+  socket.on('roomCreated', (room)=> {
+    console.log(room)
+    socket.broadcast.emit('roomsFromServer', room)
+  })
+
+  // Сокеты testVSroom
   socket.on('userConnected', ()=> {
     console.log('Server IO say: user join in a room')
     clientNo++;
