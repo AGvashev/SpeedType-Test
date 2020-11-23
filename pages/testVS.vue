@@ -36,7 +36,7 @@
                     <v-img 
                     :src="el.userImage" 
                     max-height="150"
-                    max-width="250"
+                    max-width="150"
                     alt="First player image">
                     </v-img>
                 </div>
@@ -99,24 +99,6 @@ export default {
             roomIndex: index,
             userAuth: this.userAuth
         })
-
-        // let userName = this.userName
-        // let userImage = this.userImage
-        // let roomIndex = index
-        // if (userName == room.userName) {
-        //     this.roomError = false
-        //     this.roomError = true
-        //     this.roomErrorText = 'Вы не можете войти в свою комнату'
-        //     setTimeout(() => {
-        //         this.roomError = false
-        //         this.roomErrorText = ''
-        //     }, 3000);
-        //     return
-        // }
-        // this.$socket.emit('joinedInRoom', {roomIndex, userName, userImage})
-        // room.enemyUserName = userName
-        // room.enemyUserImage = userImage
-        // this.playerJoined = true
       },
       deleteRoom(roomIndex) {
         this.$socket.emit('roomDelete', roomIndex)
@@ -132,12 +114,15 @@ export default {
     roomsDeleteFromServer(roomIndex) {
         this.rooms.splice(roomIndex, 1)
     },
-    deleteRoomFromServer(room) {
-       this.rooms.push(room)
-    },
     joinedRoomFromServer(data) {
         this.joinPlayerName = data.joinedUserName
         this.joinPlayerImage = data.joinedUserImage
+        const roomIndex = data.roomIndex 
+
+        setTimeout(() => {
+            this.$router.push({ path: '/testVSroom', query: { roomIndex} })
+            this.rooms.splice(roomIndex, 1)
+        }, 5000);
     },
     errorFromServer(errText) {
         this.roomError = false
@@ -168,6 +153,13 @@ export default {
             }
         })
         this.$socket.emit('userConnectedInTestPVP', this.room)
+  },
+  destroyed() {
+    this.rooms.forEach((el, i) => {
+        if (el.userName == this.userName) {
+            this.$socket.emit('roomDelete', i)
+        }
+    });
   }
 }
 </script>

@@ -38,18 +38,16 @@
 export default {
     layout: 'main_layout',
     sockets: {
-            connection() {
-                console.log('Client say: socket connected')
-            },
-            keyPressedFromServer(data) {
-                console.log(data)
+            serverKey(data) {
+                console.log(data.key)
+                console.log(document.querySelectorAll('.greenW'))
                 const greenNowSymbol = document.querySelectorAll('.greenW')[0]
-                if (data === 'Shift' || data === 'Backspace') {
+                if (data.key === 'Shift' || data.key === 'Backspace') {
                     console.log('Нажат шифт или бакспейс')
-                } else if (greenNowSymbol.textContent === data) {
+                } else if (greenNowSymbol.textContent === data.key) {
                     greenNowSymbol.classList.add('wpased')
                     this.secondGreenNow++
-                } else if (greenNowSymbol.textContent !== data) {
+                } else if (greenNowSymbol.textContent !== data.key) {
                     if (!greenNowSymbol.classList.contains('redW')) {
                     this.secondMisses++
                     greenNowSymbol.classList.add('redW')
@@ -70,6 +68,8 @@ export default {
             secondGreenNow: 0,
             secondMisses: 0,
             clientRoom: 0,
+            roomIndex: '',
+            userName: '',
         }
     },
     methods: {
@@ -77,27 +77,32 @@ export default {
             const keyPressedNow = key.key
             const clientRoom = this.clientRoom
             const greenNowSymbol = document.querySelectorAll('.greenW')[1]
-            this.$socket.emit('keyPressedOnServer', {key: keyPressedNow, room: clientRoom})
-                if (keyPressedNow === 'Shift' || keyPressedNow === 'Backspace') {
-                } else if (greenNowSymbol.textContent === keyPressedNow) {
-                    greenNowSymbol.classList.add('wpased')
-                    this.firstGreenNow++
-                } else if (greenNowSymbol.textContent !== keyPressedNow) {
-                    if (!greenNowSymbol.classList.contains('redW')) {
-                    this.firstMisses++
-                    greenNowSymbol.classList.add('redW')
-                    }
+            this.$socket.emit('clientKeyPressed', {key: keyPressedNow, room: clientRoom})
+
+            if (keyPressedNow === 'Shift' || keyPressedNow === 'Backspace') {
+            } else if (greenNowSymbol.textContent === keyPressedNow) {
+                greenNowSymbol.classList.add('wpased')
+                this.firstGreenNow++
+            } else if (greenNowSymbol.textContent !== keyPressedNow) {
+                if (!greenNowSymbol.classList.contains('redW')) {
+                this.firstMisses++
+                greenNowSymbol.classList.add('redW')
                 }
+            }
         },
         messageBtn: function () {
             console.log(this.$socket)
         }
     },
     created() {
-        
+        if (!this.$route.query.roomIndex) {
+            return this.$router.push('/testVS')
+        }
+        this.roomIndex = this.$route.query.roomIndex
+        return this.roomIndex
     },
     mounted() {
-        this.$socket.emit('userJoinRoom')
+        this.$socket.emit('userJoinRoom', this.roomIndex)
         window.addEventListener('keydown', this.keyPressed)
     },
     beforeDestroy () {

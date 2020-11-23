@@ -35,7 +35,6 @@ io.on('connection', socket => {
   socket.on('joinedInRoom', data => {
     let error = false
     if (!data.userAuth) return socket.emit('errorFromServer', 'Вы не авторизировались')
-    console.log(testRooms[data.roomIndex].userName == data.joinedUserName)
     if (testRooms[data.roomIndex].userName == data.joinedUserName) return socket.emit('errorFromServer', 'Вы не можете войти в свою комнату')
     testRooms[data.roomIndex].joinedUserName = data.joinedUserName
     testRooms[data.roomIndex].joinedUserImage = data.joinedUserImage
@@ -48,17 +47,15 @@ io.on('connection', socket => {
 
 
   // Сокеты testVSroom
-  socket.on('userJoinRoom', ()=> {
+  socket.on('userJoinRoom', (roomIndex)=> {
     console.log('Server IO say: user join in a room')
-    clientNo++;
-    socket.join(Math.round(clientNo/2))
-    socket.emit('serverMsg', Math.round(clientNo/2))
+    socket.join(roomIndex)
+    socket.emit('serverMsg', roomIndex)
   })
   
 
-  socket.on('keyPressedOnServer', data => {
-    console.log('keyPressedOnServer пришел' + data.key)
-    socket.to(data.room).broadcast.emit("keyPressedFromServer", data.key)
+  socket.on('clientKeyPressed', data => {
+   socket.to(data.room).broadcast.emit("serverKey", { key : data.key, userName: data.userName })
   })
 
   socket.on('userDisconnect', ()=> {
