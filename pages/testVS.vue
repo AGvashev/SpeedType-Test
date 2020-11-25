@@ -18,7 +18,8 @@
     </v-row>
     <v-row 
     v-for="(el, i) in rooms"
-    :key="el.roomName"
+    :key="i"
+    v-model="rooms"
     class="py-2"
     >
         <v-col class="d-flex flex-column justify-center room">
@@ -26,7 +27,7 @@
                 Комната "{{ el.roomName}}"
             </div>
     
-            <v-btn v-if="el.userName == userName" class="align-self-end" @click="deleteRoom(i)">
+            <v-btn v-if="el.userName == userName" class="align-self-end" @click="deleteRoomBtn(i)">
                 <v-icon>mdi-delete</v-icon>
             </v-btn>
 
@@ -49,11 +50,11 @@
                 </v-img>
 
                 <div>
-                    <v-btn :disabled="playerJoined" v-if="!joinPlayerName" width="250px" @click="joinInRoom(i)">Войти</v-btn>
-                    <div v-if="joinPlayerName" class="d-flex flex-column align-center">
-                        {{ joinPlayerName }}
+                    <v-btn :disabled="playerJoined" v-if="!el.joinPlayerName" width="250px" @click="joinInRoom(i)">Войти</v-btn>
+                    <div v-if="el.joinPlayerName" class="d-flex flex-column align-center">
+                        {{ el.joinPlayerName }}
                         <v-img 
-                        :src="joinPlayerImage" 
+                        :src="el.joinPlayerImage" 
                         max-height="150"
                         max-width="150"
                         alt="First player image">
@@ -77,8 +78,6 @@ export default {
         roomName: '',
         rooms: [],
         roomError: false,
-        joinPlayerName: '',
-        joinPlayerImage: '',
         playerJoined: false,
     }
   },
@@ -88,11 +87,15 @@ export default {
             userName: this.userName,
             userImage: this.userImage,
             roomName: this.roomName,
-            userAuth: this.userAuth
+            userAuth: this.userAuth,
+            joinPlayerName: '',
+            joinPlayerImage: '',
         })
         this.roomName = ''
       },
       async joinInRoom(index) {
+        this.playerJoined = true
+        this.deleteRoom()
         this.$socket.emit('joinedInRoom', {
             joinedUserName: this.userName,
             joinedUserImage: this.userImage,
@@ -100,8 +103,15 @@ export default {
             userAuth: this.userAuth
         })
       },
-      deleteRoom(roomIndex) {
+      deleteRoomBtn(roomIndex) {
         this.$socket.emit('roomDelete', roomIndex)
+      },
+      deleteRoom() {
+        this.rooms.forEach((el, i) => {
+            if (el.userName == this.userName) {
+                this.$socket.emit('roomDelete', i)
+            }
+        });
       }
   },
   sockets: {
@@ -115,19 +125,23 @@ export default {
         this.rooms.splice(roomIndex, 1)
     },
     joinedRoomFromServer(data) {
-        this.joinPlayerName = data.joinedUserName
-        this.joinPlayerImage = data.joinedUserImage
+        console.log(data)
         const roomIndex = data.roomIndex 
-
+        this.$set(this.rooms[roomIndex], 'joinPlayerName', data.joinedUserName);
+        this.$set(this.rooms[roomIndex], 'joinPlayerImage', data.joinedUserImage);
+        this.testStarted = true
         setTimeout(() => {
-            this.$router.push({ path: '/testVSroom', query: { roomIndex} })
-            this.rooms.splice(roomIndex, 1)
+            if (this.userName == this.rooms[roomIndex].userName || this.userName == data.joinedUserName) {
+                this.$router.push({ path: '/testVSroom', query: { roomIndex} })
+                this.userName == this.rooms[roomIndex].userName ? this.deleteRoom() : ''
+            }
         }, 5000);
     },
     errorFromServer(errText) {
         this.roomError = false
         this.roomError = true
         this.roomErrorText = errText
+        this.playerJoined = false
         setTimeout(() => {
             this.roomError = false
             this.roomErrorText = ''
@@ -155,11 +169,7 @@ export default {
         this.$socket.emit('userConnectedInTestPVP', this.room)
   },
   destroyed() {
-    this.rooms.forEach((el, i) => {
-        if (el.userName == this.userName) {
-            this.$socket.emit('roomDelete', i)
-        }
-    });
+      this.deleteRoom()
   }
 }
 </script>

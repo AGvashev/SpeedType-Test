@@ -42,8 +42,8 @@ export default {
                 console.log(data.key)
                 console.log(document.querySelectorAll('.greenW'))
                 const greenNowSymbol = document.querySelectorAll('.greenW')[0]
-                if (data.key === 'Shift' || data.key === 'Backspace') {
-                    console.log('Нажат шифт или бакспейс')
+                if (data.key === 'Shift' || data.key === 'Backspace' || data.key === 'Alt' || data.key === 'Ctrl') {
+                    console.log('Нажат шифт или бакспейс или альт или ктрл')
                 } else if (greenNowSymbol.textContent === data.key) {
                     greenNowSymbol.classList.add('wpased')
                     this.secondGreenNow++
@@ -98,6 +98,7 @@ export default {
         if (!this.$route.query.roomIndex) {
             return this.$router.push('/testVS')
         }
+        // Обращаться к серверу и по сокету и проверять, если пользователя нет в списке, то перенаправлять на testVS
         this.roomIndex = this.$route.query.roomIndex
         return this.roomIndex
     },

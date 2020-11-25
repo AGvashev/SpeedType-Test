@@ -88,9 +88,9 @@ export default {
                 })
                 await this.$fire.database.ref(`/users/${uid}/results`).set({
                       gamePlayed: 1,
-                      bestWpm: this.stats.WPM ,
-                      bestAcuuracy: this.stats.Accuracy,
-                      bestTime: this.stats.Timer
+                      bestWpm: 0,
+                      bestAcuuracy: 0,
+                      bestTime: 0
                   })
                 this.$router.push('/profile')
             } catch (error) {
