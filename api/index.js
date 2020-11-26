@@ -4,6 +4,7 @@ const io = require("socket.io")(server);
 
 let clientNo = 0;
 let testRooms = [];
+let roomInTest = [];
 
 io.on('connection', socket => {
   console.log('Server IO say: user connected')
@@ -33,7 +34,6 @@ io.on('connection', socket => {
   })
   
   socket.on('joinedInRoom', data => {
-    let error = false
     if (!data.userAuth) return socket.emit('errorFromServer', 'Вы не авторизировались')
     if (testRooms[data.roomIndex].userName == data.joinedUserName) return socket.emit('errorFromServer', 'Вы не можете войти в свою комнату')
     testRooms[data.roomIndex].joinedUserName = data.joinedUserName
@@ -47,20 +47,43 @@ io.on('connection', socket => {
 
 
   // Сокеты testVSroom
-  socket.on('userJoinRoom', (roomIndex)=> {
-    console.log('Server IO say: user join in a room')
-    socket.join(roomIndex)
-    socket.emit('serverMsg', roomIndex)
+  socket.on('testStarted', (i)=> {
+        if (!roomInTest[i]) {
+          roomInTest[i] = testRooms[i]
+        }
+        
+  })
+
+  socket.on('userJoinRoom', (data)=> {
+    let serverMsg = ''
+    if (data.roomIndex == null || !roomInTest[data.roomIndex]) {
+      serverMsg = 'Не верный номер комнаты'
+      return socket.emit('serverErr', serverMsg)
+    } else if (roomInTest[data.roomIndex].playerInGameCount > 2) {
+      serverMsg = 'Вы не можете войти в данную комнату'
+      return socket.emit('serverErr', serverMsg)
+    } else if (data.userName == roomInTest[data.roomIndex].userName || data.userName == roomInTest[data.roomIndex].joinedUserName) {
+      console.log('Server IO say: user join in a room')
+      socket.join(data.roomIndex)
+      roomInTest[data.roomIndex].playerInGameCount++
+    } else {
+      serverMsg = 'Незивестная ошибка'
+      return socket.emit('serverErr', serverMsg)
+    }
   })
   
-
   socket.on('clientKeyPressed', data => {
    socket.to(data.room).broadcast.emit("serverKey", { key : data.key, userName: data.userName })
   })
 
-  socket.on('userDisconnect', ()=> {
+  socket.on('userDisconnect', (i)=> {
     console.log('Server IO say: user leave in a room')
-    clientNo--;
+    if (roomInTest[i]) {
+      roomInTest[i].playerInGameCount--
+      if (roomInTest[i].playerInGameCount == 0) {
+          roomInTest.splice(i, 1)
+      }
+    }
   })
 })
 

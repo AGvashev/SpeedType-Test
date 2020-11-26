@@ -84,7 +84,7 @@
 <script>
 import Cookies from 'js-cookie'
 export default {
-    mounted() {
+    beforeMount() {
       this.setupFirebase()
     },
     data() {

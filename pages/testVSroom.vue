@@ -2,8 +2,11 @@
   <v-container>
     <h1>Страница для тестов</h1>
     <h2>Socket IO status: <span>{{ $socket.connected ? 'Connected' : 'Disconnected' }}</span></h2>
-    <h2>You room: <span>{{ clientRoom }}</span></h2>
-    <v-row>
+    <h2>You room: <span>{{ roomIndex }}</span></h2>
+    <v-alert type="error" v-if="serverErrMsg" style="position: fixed; top:40%; left:40%;">
+        {{ serverErrMsg }}
+    </v-alert>
+    <v-row v-if="!serverErrMsg">
         <v-col>
             <div class="mainText">
             <span
@@ -26,12 +29,6 @@
         </div>
         </v-col>
     </v-row>
-    
-    <v-btn
-    elevation="2"
-    @click="messageBtn"
-    >Click me</v-btn>
-    <Nuxt />
   </v-container>
 </template>
 <script>
@@ -39,11 +36,9 @@ export default {
     layout: 'main_layout',
     sockets: {
             serverKey(data) {
-                console.log(data.key)
-                console.log(document.querySelectorAll('.greenW'))
                 const greenNowSymbol = document.querySelectorAll('.greenW')[0]
                 if (data.key === 'Shift' || data.key === 'Backspace' || data.key === 'Alt' || data.key === 'Ctrl') {
-                    console.log('Нажат шифт или бакспейс или альт или ктрл')
+                    return
                 } else if (greenNowSymbol.textContent === data.key) {
                     greenNowSymbol.classList.add('wpased')
                     this.secondGreenNow++
@@ -54,10 +49,11 @@ export default {
                     }
                 }
             },
-            serverMsg(data)  {
-                console.log('I should be in room ' + data)
-                console.log(data)
-                return this.clientRoom = data
+            serverErr(data)  {
+                this.serverErrMsg = data
+                setTimeout(() => {
+                    this.$router.push('/testVS')
+                }, 5000); 
             }
     },
     data() {
@@ -67,19 +63,20 @@ export default {
             firstMisses: 0,
             secondGreenNow: 0,
             secondMisses: 0,
-            clientRoom: 0,
             roomIndex: '',
             userName: '',
+            serverErrMsg: '',
         }
     },
     methods: {
         keyPressed (key) {
             const keyPressedNow = key.key
-            const clientRoom = this.clientRoom
+            const clientRoom = this.roomIndex
             const greenNowSymbol = document.querySelectorAll('.greenW')[1]
             this.$socket.emit('clientKeyPressed', {key: keyPressedNow, room: clientRoom})
 
-            if (keyPressedNow === 'Shift' || keyPressedNow === 'Backspace') {
+            if (keyPressedNow === 'Shift' || keyPressedNow === 'Backspace' || keyPressedNow === 'Alt' || keyPressedNow === 'Ctrl') {
+                return
             } else if (greenNowSymbol.textContent === keyPressedNow) {
                 greenNowSymbol.classList.add('wpased')
                 this.firstGreenNow++
@@ -89,25 +86,35 @@ export default {
                 greenNowSymbol.classList.add('redW')
                 }
             }
-        },
-        messageBtn: function () {
-            console.log(this.$socket)
         }
     },
-    created() {
-        if (!this.$route.query.roomIndex) {
-            return this.$router.push('/testVS')
-        }
-        // Обращаться к серверу и по сокету и проверять, если пользователя нет в списке, то перенаправлять на testVS
-        this.roomIndex = this.$route.query.roomIndex
-        return this.roomIndex
+    async beforeMount() {
+        let uid = '';
+        await this.$fire.auth.onAuthStateChanged(user => {
+            if (!user) {
+            this.$router.push('/login')
+            } else {
+            uid = user.uid
+                this.$fire.database.ref(`/users/${uid}/info`).once('value')
+                    .then( (data) => {
+                        this.userName = data.val().name
+                        this.roomIndex = this.$route.query.roomIndex
+                        this.$socket.emit('userJoinRoom', {
+                            roomIndex: this.roomIndex,
+                            userName: this.userName
+                        })
+                    })
+            }
+            
+        })
+
     },
     mounted() {
-        this.$socket.emit('userJoinRoom', this.roomIndex)
         window.addEventListener('keydown', this.keyPressed)
     },
     beforeDestroy () {
-        this.$socket.emit('userDisconnect')
+        this.$socket.emit('userDisconnect', this.roomIndex)
+        this.$socket.emit('roomDestroy')
         window.removeEventListener('keydown', this.keyPressed)
     },
     

@@ -88,14 +88,14 @@ export default {
             userImage: this.userImage,
             roomName: this.roomName,
             userAuth: this.userAuth,
-            joinPlayerName: '',
-            joinPlayerImage: '',
+            joinedUserName: '',
+            joinedUserImage: '',
+            playerInGameCount: 0
         })
         this.roomName = ''
       },
       async joinInRoom(index) {
         this.playerJoined = true
-        this.deleteRoom()
         this.$socket.emit('joinedInRoom', {
             joinedUserName: this.userName,
             joinedUserImage: this.userImage,
@@ -106,9 +106,9 @@ export default {
       deleteRoomBtn(roomIndex) {
         this.$socket.emit('roomDelete', roomIndex)
       },
-      deleteRoom() {
+      deleteRoom(name) {
         this.rooms.forEach((el, i) => {
-            if (el.userName == this.userName) {
+            if (el.userName == name) {
                 this.$socket.emit('roomDelete', i)
             }
         });
@@ -125,15 +125,15 @@ export default {
         this.rooms.splice(roomIndex, 1)
     },
     joinedRoomFromServer(data) {
-        console.log(data)
+        this.deleteRoom(data.joinedUserName)
         const roomIndex = data.roomIndex 
+        this.$socket.emit('testStarted', roomIndex)
         this.$set(this.rooms[roomIndex], 'joinPlayerName', data.joinedUserName);
         this.$set(this.rooms[roomIndex], 'joinPlayerImage', data.joinedUserImage);
         this.testStarted = true
         setTimeout(() => {
             if (this.userName == this.rooms[roomIndex].userName || this.userName == data.joinedUserName) {
                 this.$router.push({ path: '/testVSroom', query: { roomIndex} })
-                this.userName == this.rooms[roomIndex].userName ? this.deleteRoom() : ''
             }
         }, 5000);
     },
@@ -153,7 +153,7 @@ export default {
         await this.$fire.auth.onAuthStateChanged(user => {
             if (user) {
                 this.userAuth = true
-                const uid = this.$fire.auth.currentUser.uid
+                const uid = user.uid
                 this.$fire.database.ref(`/users/${uid}/info`).once('value')
                     .then( async (data) => {
                         this.userName = data.val().name
@@ -169,7 +169,7 @@ export default {
         this.$socket.emit('userConnectedInTestPVP', this.room)
   },
   destroyed() {
-      this.deleteRoom()
+      this.deleteRoom(this.userName)
   }
 }
 </script>
