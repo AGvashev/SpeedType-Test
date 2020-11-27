@@ -127,15 +127,21 @@ export default {
     joinedRoomFromServer(data) {
         this.deleteRoom(data.joinedUserName)
         const roomIndex = data.roomIndex 
-        this.$socket.emit('testStarted', roomIndex)
+        const roomNumber = data.roomNumber
+        const roomCreator = this.rooms[roomIndex].userName
+        const roomJoined = data.joinedUserName
+        this.$socket.emit('testStarted', {
+            roomNumber,
+            roomIndex
+        })
         this.$set(this.rooms[roomIndex], 'joinPlayerName', data.joinedUserName);
         this.$set(this.rooms[roomIndex], 'joinPlayerImage', data.joinedUserImage);
         this.testStarted = true
-        setTimeout(() => {
-            if (this.userName == this.rooms[roomIndex].userName || this.userName == data.joinedUserName) {
-                this.$router.push({ path: '/testVSroom', query: { roomIndex} })
-            }
-        }, 5000);
+        // setTimeout(() => {
+                if (this.userName == roomCreator || this.userName == roomJoined) {
+                    this.$router.push({ path: '/testVSroom', query: { roomNumber} })
+                }
+        // }, 5000);
     },
     errorFromServer(errText) {
         this.roomError = false

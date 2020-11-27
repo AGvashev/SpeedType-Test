@@ -38,6 +38,10 @@ io.on('connection', socket => {
     if (testRooms[data.roomIndex].userName == data.joinedUserName) return socket.emit('errorFromServer', 'Вы не можете войти в свою комнату')
     testRooms[data.roomIndex].joinedUserName = data.joinedUserName
     testRooms[data.roomIndex].joinedUserImage = data.joinedUserImage
+    data.roomNumber = Math.floor(Math.random() * Math.floor(1000))
+    while (roomInTest[data.roomNumber]) {
+      data.roomNumber++
+    }
     io.emit('joinedRoomFromServer', data)
   })
 
@@ -47,9 +51,9 @@ io.on('connection', socket => {
 
 
   // Сокеты testVSroom
-  socket.on('testStarted', (i)=> {
-        if (!roomInTest[i]) {
-          roomInTest[i] = testRooms[i]
+  socket.on('testStarted', (data)=> {
+        if (!roomInTest[data.roomNumber]) {
+          roomInTest[data.roomNumber] = testRooms[data.roomIndex]
         }
         
   })
@@ -66,6 +70,9 @@ io.on('connection', socket => {
       console.log('Server IO say: user join in a room')
       socket.join(data.roomIndex)
       roomInTest[data.roomIndex].playerInGameCount++
+      if (roomInTest[data.roomIndex].playerInGameCount == 2) {
+        io.in(data.roomIndex).emit('gameStarted')
+      }
     } else {
       serverMsg = 'Незивестная ошибка'
       return socket.emit('serverErr', serverMsg)
@@ -73,15 +80,21 @@ io.on('connection', socket => {
   })
   
   socket.on('clientKeyPressed', data => {
-   socket.to(data.room).broadcast.emit("serverKey", { key : data.key, userName: data.userName })
+    io.in(data.room).emit("serverKey", { key : data.key, userName: data.userPressed })
+  })
+
+  socket.on('gameEnd', data => {
+    io.in(data.room).emit("gameWinner", data)
   })
 
   socket.on('userDisconnect', (i)=> {
     console.log('Server IO say: user leave in a room')
     if (roomInTest[i]) {
       roomInTest[i].playerInGameCount--
-      if (roomInTest[i].playerInGameCount == 0) {
+      if (roomInTest[i].playerInGameCount <= 1) {
           roomInTest.splice(i, 1)
+          serverMsg = 'Один из пользователей'
+          socket.emit('serverErr', serverMsg)
       }
     }
   })

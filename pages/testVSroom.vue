@@ -1,20 +1,81 @@
 <template>
   <v-container>
+    <div v-if="!serverErrMsg && progressValue != 100" class="alert">
+        <div v-if="allUserConnect">
+            До начала игры осталось 
+            <v-progress-circular
+            :size="100"
+            :width="10"
+            :value="progressValue"
+            color="blue-grey"
+            >{{ countdownTimerSec }}</v-progress-circular>
+        </div>
+        <div v-else>
+            Ждем остальных игроков
+        </div>
+    </div>
     <h1>Страница для тестов</h1>
     <h2>Socket IO status: <span>{{ $socket.connected ? 'Connected' : 'Disconnected' }}</span></h2>
     <h2>You room: <span>{{ roomIndex }}</span></h2>
     <v-alert type="error" v-if="serverErrMsg" style="position: fixed; top:40%; left:40%;">
         {{ serverErrMsg }}
-    </v-alert>
-    <v-row v-if="!serverErrMsg">
+    </v-alert> 
+        <v-card
+        outlined
+        shaped
+        class="mx-auto"
+        v-if="!serverErrMsg && !textEnd"
+        >
+            <v-card-title class="d.flex justify-center align-center">
+                <v-icon
+                    dense
+                    medium
+                    class="px-1"
+                >
+                    mdi-timer
+                </v-icon>
+                Время {{ Timer }}
+            </v-card-title>
+        </v-card>  
+    <v-row v-if="!serverErrMsg && !textEnd">
         <v-col>
             <div class="mainText">
-            <span
-                v-for="(item, index) in message"
-                :key="index"
-                :index="index"
-                :class="[index == secondGreenNow ? 'greenW' : '', secondGreenNow > index ? 'passedW' : '', index > secondGreenNow ? 'blackW' : '']"
-            >{{ item }}</span>
+                <span
+                    v-for="(item, index) in message"
+                    :key="index"
+                    :index="index"
+                    :class="[index == secondGreenNow ? 'greenW' : '', secondGreenNow > index ? 'passedW' : '', index > secondGreenNow ? 'blackW' : '']"
+                >{{ item }}</span>
+            </div>
+
+            <span>Статистика</span>
+                        <div class="stat">
+                <v-card
+                    v-for="(value, name) in secondStats"
+                    :key="name"
+                    outlined
+                    shaped
+                    class="mx-auto"
+                >
+                    <v-card-title>
+                    <v-icon
+                        dense
+                        medium
+                        class="px-1"
+                    >
+                        {{
+                        name == 'secondWPM' ? 'mdi-speedometer' :
+                        name == 'secondAccuracy' ? 'mdi-checkbox-marked-circle-outline' : ''
+                        }}
+                    </v-icon>
+                    {{
+                        name == 'secondWPM' ? 'Скорость' :
+                        name == 'secondAccuracy' ? 'Точность' : ''
+                    }}
+                    :
+                    {{ value }} 
+                    </v-card-title>
+                </v-card>
             </div>
         </v-col>
         <v-col>
@@ -27,7 +88,43 @@
             :class="[index == firstGreenNow ? 'greenW' : '', firstGreenNow > index ? 'passedW' : '', index > firstGreenNow ? 'blackW' : '']"
           >{{ item }}</span>
         </div>
+
+        <span>Статистика</span>
+        <div class="stat">
+                <v-card
+                    v-for="(value, name) in firstStats"
+                    :key="name"
+                    outlined
+                    shaped
+                    class="mx-auto"
+                >
+                    <v-card-title>
+                    <v-icon
+                        dense
+                        medium
+                        class="px-1"
+                    >
+                        {{
+                        name == 'firstWPM' ? 'mdi-speedometer' :
+                        name == 'firstAccuracy' ? 'mdi-checkbox-marked-circle-outline' : ''
+                        }}
+                    </v-icon>
+                    {{
+                        name == 'firstWPM' ? 'Скорость' :
+                        name == 'firstAccuracy' ? 'Точность' : ''
+                    }}
+                    :
+                    {{ value }} 
+                    </v-card-title>
+                </v-card>
+            </div>
         </v-col>
+    </v-row>
+    <v-row v-if="textEnd">
+        Игра завершена <br />
+        Победитель: {{ winnerUserName }} <br />
+        WPM: {{ winnerWPM }} <br />
+        Accuracy: {{ winnerAccuracy }} <br />
     </v-row>
   </v-container>
 </template>
@@ -36,17 +133,54 @@ export default {
     layout: 'main_layout',
     sockets: {
             serverKey(data) {
-                const greenNowSymbol = document.querySelectorAll('.greenW')[0]
-                if (data.key === 'Shift' || data.key === 'Backspace' || data.key === 'Alt' || data.key === 'Ctrl') {
+                 if (this.textEnd == true) {
                     return
-                } else if (greenNowSymbol.textContent === data.key) {
-                    greenNowSymbol.classList.add('wpased')
-                    this.secondGreenNow++
-                } else if (greenNowSymbol.textContent !== data.key) {
-                    if (!greenNowSymbol.classList.contains('redW')) {
-                    this.secondMisses++
-                    greenNowSymbol.classList.add('redW')
+                }
+                if (data.userName == this.userName) {
+                    const greenNowSymbol = document.querySelectorAll('.greenW')[0]
+                        if (data.key === 'Shift' || data.key === 'Backspace' || data.key === 'Alt' || data.key === 'Ctrl') {
+                            return
+                        } else if (greenNowSymbol.textContent === data.key) {
+                            greenNowSymbol.classList.add('wpased')
+                            this.secondGreenNow++
+                        } else if (greenNowSymbol.textContent !== data.key) {
+                            if (!greenNowSymbol.classList.contains('redW')) {
+                            this.secondMisses++
+                            this.firstStats.firstAccuracy <= 0 ? this.firstStats.firstAccuracy = 0 : this.firstStats.firstAccuracy = (this.firstStats.firstAccuracy - this.message.length / 100).toFixed(1)
+                            greenNowSymbol.classList.add('redW')
+                            }
+                        }
+                } else if (data.userName != this.userName) {
+                    const greenNowSymbol = document.querySelectorAll('.greenW')[1]
+                        if (data.key === 'Shift' || data.key === 'Backspace' || data.key === 'Alt' || data.key === 'Ctrl') {
+                            return
+                        } else if (greenNowSymbol.textContent === data.key) {
+                            greenNowSymbol.classList.add('wpased')
+                            this.firstGreenNow++
+                        } else if (greenNowSymbol.textContent !== data.key) {
+                            if (!greenNowSymbol.classList.contains('redW')) {
+                            this.firstMisses++
+                            this.secondStats.secondAccuracy <= 0 ? this.secondStats.secondAccuracy = 0 : this.secondStats.secondAccuracy = (this.secondStats.secondAccuracy - this.message.length / 100).toFixed(1)
+                            greenNowSymbol.classList.add('redW')
+                            }
+                        }
+                } 
+                if (this.firstGreenNow === (this.message.length) || this.secondGreenNow === (this.message.length)) {
+                    let winner = {}
+                    winner.room = this.roomIndex
+                    if (this.firstGreenNow > this.secondGreenNow) {
+                        winner.userName = this.userName
+                        winner.WPM = this.firstStats.firstWPM
+                        winner.Accuracy = this.firstStats.firstAccuracy
+                    } else {
+                        winner.userName = data.userName
+                        winner.WPM = this.secondStats.secondWPM
+                        winner.Accuracy = this.secondStats.secondAccuracy
                     }
+                    this.$socket.emit('gameEnd', winner)
+                    // this.stop()
+                    // this.textEnd = true   
+                    return
                 }
             },
             serverErr(data)  {
@@ -54,6 +188,28 @@ export default {
                 setTimeout(() => {
                     this.$router.push('/testVS')
                 }, 5000); 
+            },
+            gameStarted() {
+                this.allUserConnect = true
+                let timer = false
+                if (!timer) {
+				  timer = setInterval( () => {
+						if (this.countdownTimerSec > 0) {
+                            this.progressValue += 20
+							 this.countdownTimerSec--
+						} else {
+                             clearInterval(timer)
+                             this.start()
+						}
+                  }, 1000)
+                }
+            },
+            gameWinner(data) {
+                this.winnerUserName = data.userName
+                this.winnerWPM = data.WPM
+                this.winnerAccuracy = data.Accuracy
+                this.stop()
+                this.textEnd = true  
             }
     },
     data() {
@@ -66,27 +222,43 @@ export default {
             roomIndex: '',
             userName: '',
             serverErrMsg: '',
+            countdownTimerSec: 5,
+            progressValue: 0,
+            allUserConnect: false,
+            textEnd: false,
+            firstStats: {
+                firstWPM: 0,
+                firstAccuracy: 100,
+            },
+            secondStats: {
+                secondWPM: 0,
+                secondAccuracy: 100
+            },
+            Timer: 0,
+            timer: () => {
+                this.Timer++
+                this.firstStats.firstWPM = Math.round(this.firstGreenNow / (this.Timer / 60))
+                this.secondStats.secondWPM = Math.round(this.secondGreenNow / (this.Timer / 60))
+            },
+            countdownTimer: '',
+            winnerUserName: '',
+            winnerWPM: '',
+            winnerAccuracy: ''
         }
     },
     methods: {
         keyPressed (key) {
+            if (this.countdownTimerSec != 0) return
             const keyPressedNow = key.key
             const clientRoom = this.roomIndex
-            const greenNowSymbol = document.querySelectorAll('.greenW')[1]
-            this.$socket.emit('clientKeyPressed', {key: keyPressedNow, room: clientRoom})
-
-            if (keyPressedNow === 'Shift' || keyPressedNow === 'Backspace' || keyPressedNow === 'Alt' || keyPressedNow === 'Ctrl') {
-                return
-            } else if (greenNowSymbol.textContent === keyPressedNow) {
-                greenNowSymbol.classList.add('wpased')
-                this.firstGreenNow++
-            } else if (greenNowSymbol.textContent !== keyPressedNow) {
-                if (!greenNowSymbol.classList.contains('redW')) {
-                this.firstMisses++
-                greenNowSymbol.classList.add('redW')
-                }
-            }
-        }
+            this.$socket.emit('clientKeyPressed', {userPressed: this.userName, key: keyPressedNow, room: clientRoom})
+        },
+        start () {
+            this.countdownTimer = setInterval(this.timer, 1000)
+        },
+        stop () {
+            clearInterval(this.countdownTimer)
+        },
     },
     async beforeMount() {
         let uid = '';
@@ -98,7 +270,7 @@ export default {
                 this.$fire.database.ref(`/users/${uid}/info`).once('value')
                     .then( (data) => {
                         this.userName = data.val().name
-                        this.roomIndex = this.$route.query.roomIndex
+                        this.roomIndex = this.$route.query.roomNumber
                         this.$socket.emit('userJoinRoom', {
                             roomIndex: this.roomIndex,
                             userName: this.userName
@@ -107,7 +279,6 @@ export default {
             }
             
         })
-
     },
     mounted() {
         window.addEventListener('keydown', this.keyPressed)
@@ -122,6 +293,22 @@ export default {
 </script>
 
 <style scoped>
+    .alert {
+        position: fixed;
+        top: 0%;
+        left: 0%;
+        width: 100%;
+        height: 100%;
+        background-color: antiquewhite;
+        z-index: 9999;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-size: 25px;
+    }
+
     .mainText {
         width: 500px;
         height: 225px;
