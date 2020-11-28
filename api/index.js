@@ -84,7 +84,7 @@ io.on('connection', socket => {
   })
 
   socket.on('gameEnd', data => {
-    io.in(data.room).emit("gameWinner", data)
+    socket.in(data.room).broadcast.emit("gameWinner", data)
   })
 
   socket.on('userDisconnect', (i)=> {

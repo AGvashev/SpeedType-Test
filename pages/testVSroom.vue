@@ -44,50 +44,9 @@
                     v-for="(item, index) in message"
                     :key="index"
                     :index="index"
-                    :class="[index == secondGreenNow ? 'greenW' : '', secondGreenNow > index ? 'passedW' : '', index > secondGreenNow ? 'blackW' : '']"
+                    :class="[index == firstGreenNow ? 'greenW' : '', firstGreenNow > index ? 'passedW' : '', index > firstGreenNow ? 'blackW' : '']"
                 >{{ item }}</span>
             </div>
-
-            <span>Статистика</span>
-                        <div class="stat">
-                <v-card
-                    v-for="(value, name) in secondStats"
-                    :key="name"
-                    outlined
-                    shaped
-                    class="mx-auto"
-                >
-                    <v-card-title>
-                    <v-icon
-                        dense
-                        medium
-                        class="px-1"
-                    >
-                        {{
-                        name == 'secondWPM' ? 'mdi-speedometer' :
-                        name == 'secondAccuracy' ? 'mdi-checkbox-marked-circle-outline' : ''
-                        }}
-                    </v-icon>
-                    {{
-                        name == 'secondWPM' ? 'Скорость' :
-                        name == 'secondAccuracy' ? 'Точность' : ''
-                    }}
-                    :
-                    {{ value }} 
-                    </v-card-title>
-                </v-card>
-            </div>
-        </v-col>
-        <v-col>
-
-        <div class="mainText">
-          <span
-            v-for="(item, index) in message"
-            :key="index"
-            :index="index"
-            :class="[index == firstGreenNow ? 'greenW' : '', firstGreenNow > index ? 'passedW' : '', index > firstGreenNow ? 'blackW' : '']"
-          >{{ item }}</span>
-        </div>
 
         <span>Статистика</span>
         <div class="stat">
@@ -119,6 +78,46 @@
                 </v-card>
             </div>
         </v-col>
+        <v-col>
+
+        <div class="mainText">
+          <span
+            v-for="(item, index) in message"
+            :key="index"
+            :index="index"
+            :class="[index == secondGreenNow ? 'greenW' : '', secondGreenNow > index ? 'passedW' : '', index > secondGreenNow ? 'blackW' : '']"
+          >{{ item }}</span>
+        </div>
+        <span>Статистика</span>
+                <div class="stat">
+                <v-card
+                    v-for="(value, name) in secondStats"
+                    :key="name"
+                    outlined
+                    shaped
+                    class="mx-auto"
+                >
+                    <v-card-title>
+                    <v-icon
+                        dense
+                        medium
+                        class="px-1"
+                    >
+                        {{
+                        name == 'secondWPM' ? 'mdi-speedometer' :
+                        name == 'secondAccuracy' ? 'mdi-checkbox-marked-circle-outline' : ''
+                        }}
+                    </v-icon>
+                    {{
+                        name == 'secondWPM' ? 'Скорость' :
+                        name == 'secondAccuracy' ? 'Точность' : ''
+                    }}
+                    :
+                    {{ value }} 
+                    </v-card-title>
+                </v-card>
+            </div>
+        </v-col>
     </v-row>
     <v-row v-if="textEnd">
         Игра завершена <br />
@@ -137,22 +136,8 @@ export default {
                     return
                 }
                 if (data.userName == this.userName) {
-                    const greenNowSymbol = document.querySelectorAll('.greenW')[0]
-                        if (data.key === 'Shift' || data.key === 'Backspace' || data.key === 'Alt' || data.key === 'Ctrl') {
-                            return
-                        } else if (greenNowSymbol.textContent === data.key) {
-                            greenNowSymbol.classList.add('wpased')
-                            this.secondGreenNow++
-                        } else if (greenNowSymbol.textContent !== data.key) {
-                            if (!greenNowSymbol.classList.contains('redW')) {
-                            this.secondMisses++
-                            this.firstStats.firstAccuracy <= 0 ? this.firstStats.firstAccuracy = 0 : this.firstStats.firstAccuracy = (this.firstStats.firstAccuracy - this.message.length / 100).toFixed(1)
-                            greenNowSymbol.classList.add('redW')
-                            }
-                        }
-                } else if (data.userName != this.userName) {
-                    const greenNowSymbol = document.querySelectorAll('.greenW')[1]
-                        if (data.key === 'Shift' || data.key === 'Backspace' || data.key === 'Alt' || data.key === 'Ctrl') {
+                    const greenNowSymbol = document.querySelectorAll('.greenW')[0] ? document.querySelectorAll('.greenW')[0] : document.querySelectorAll('.greenW')[1]
+                        if (data.key === 'Shift' || data.key === 'Backspace' || data.key === 'Alt' || data.key === 'Ctrl' || data.key === 'CapsLock') {
                             return
                         } else if (greenNowSymbol.textContent === data.key) {
                             greenNowSymbol.classList.add('wpased')
@@ -160,26 +145,55 @@ export default {
                         } else if (greenNowSymbol.textContent !== data.key) {
                             if (!greenNowSymbol.classList.contains('redW')) {
                             this.firstMisses++
+                            this.firstStats.firstAccuracy <= 0 ? this.firstStats.firstAccuracy = 0 : this.firstStats.firstAccuracy = (this.firstStats.firstAccuracy - this.message.length / 100).toFixed(1)
+                            greenNowSymbol.classList.add('redW')
+                            }
+                        }
+                } else if (data.userName != this.userName) {
+                    const greenNowSymbol = document.querySelectorAll('.greenW')[1] ? document.querySelectorAll('.greenW')[1] : document.querySelectorAll('.greenW')[0]
+                        if (data.key === 'Shift' || data.key === 'Backspace' || data.key === 'Alt' || data.key === 'Ctrl' || data.key === 'CapsLock') {
+                            return
+                        } else if (greenNowSymbol.textContent === data.key) {
+                            greenNowSymbol.classList.add('wpased')
+                            this.secondGreenNow++
+                        } else if (greenNowSymbol.textContent !== data.key) {
+                            if (!greenNowSymbol.classList.contains('redW')) {
+                            this.secondMisses++
                             this.secondStats.secondAccuracy <= 0 ? this.secondStats.secondAccuracy = 0 : this.secondStats.secondAccuracy = (this.secondStats.secondAccuracy - this.message.length / 100).toFixed(1)
                             greenNowSymbol.classList.add('redW')
                             }
                         }
                 } 
-                if (this.firstGreenNow === (this.message.length) || this.secondGreenNow === (this.message.length)) {
+                if (this.firstGreenNow == this.message.length) {
                     let winner = {}
-                    winner.room = this.roomIndex
-                    if (this.firstGreenNow > this.secondGreenNow) {
+                    let looser = {}
+                    let room = this.roomIndex
                         winner.userName = this.userName
                         winner.WPM = this.firstStats.firstWPM
                         winner.Accuracy = this.firstStats.firstAccuracy
-                    } else {
+                        looser.WPM = this.secondStats.secondWPM
+                        looser.Accuracy = this.secondStats.secondAccuracy
+                    this.$socket.emit('gameEnd', 
+                    {
+                        winner,
+                        looser,
+                        room
+                    })  
+                    return
+                } else if (this.secondGreenNow == this.message.length) {
+                    let winner = {}
+                    let looser = {}
+                    let room = this.roomIndex
                         winner.userName = data.userName
                         winner.WPM = this.secondStats.secondWPM
                         winner.Accuracy = this.secondStats.secondAccuracy
-                    }
-                    this.$socket.emit('gameEnd', winner)
-                    // this.stop()
-                    // this.textEnd = true   
+                        looser.WPM = this.firstStats.firstWPM
+                        looser.Accuracy = this.firstStats.firstAccuracy
+                    this.$socket.emit('gameEnd', {
+                        winner,
+                        looser,
+                        room
+                    })
                     return
                 }
             },
@@ -204,10 +218,49 @@ export default {
                   }, 1000)
                 }
             },
-            gameWinner(data) {
-                this.winnerUserName = data.userName
-                this.winnerWPM = data.WPM
-                this.winnerAccuracy = data.Accuracy
+            gameWinner(winnerAndLooser) {
+                if (this.userName == winnerAndLooser.winner.userName) {
+                    this.$fire.database.ref(`/users/${this.uid}/results`).once('value')
+                        .then( (data) => {
+                                this.$fire.database.ref(`/users/${this.uid}/results`).update({
+                                    gamePlayed: data.val().gamePlayed += 1
+                                })
+                                if (winnerAndLooser.winner.Accuracy > data.val().bestAcuuracy) {
+                                    this.newRecordAcc = true
+                                    this.$fire.database.ref(`/users/${this.uid}/results`).update({
+                                        bestAcuuracy: winnerAndLooser.winner.Accuracy
+                                    })
+                                }
+                                if (winnerAndLooser.winner.WPM > data.val().bestWpm) {
+                                    this.newRecordWpm = true
+                                    this.$fire.database.ref(`/users/${this.uid}/results`).update({
+                                        bestWpm: winnerAndLooser.winner.WPM
+                                    })
+                                }
+                        })
+                } else {
+                    this.$fire.database.ref(`/users/${this.uid}/results`).once('value')
+                        .then( (data) => {
+                                this.$fire.database.ref(`/users/${this.uid}/results`).update({
+                                    gamePlayed: data.val().gamePlayed += 1
+                                })
+                                if (winnerAndLooser.looser.Accuracy > data.val().bestAcuuracy) {
+                                    this.newRecordAcc = true
+                                    this.$fire.database.ref(`/users/${this.uid}/results`).update({
+                                        bestAcuuracy: winnerAndLooser.looser.Accuracy
+                                    })
+                                }
+                                if (winnerAndLooser.looser.WPM > data.val().bestWpm) {
+                                    this.newRecordWpm = true
+                                    this.$fire.database.ref(`/users/${this.uid}/results`).update({
+                                        bestWpm: winnerAndLooser.looser.WPM
+                                    })
+                                }
+                        })
+                }
+                this.winnerUserName = winnerAndLooser.winner.userName
+                this.winnerWPM = winnerAndLooser.winner.WPM
+                this.winnerAccuracy = winnerAndLooser.winner.Accuracy
                 this.stop()
                 this.textEnd = true  
             }
@@ -243,7 +296,8 @@ export default {
             countdownTimer: '',
             winnerUserName: '',
             winnerWPM: '',
-            winnerAccuracy: ''
+            winnerAccuracy: '',
+            uid: ''
         }
     },
     methods: {
@@ -261,13 +315,12 @@ export default {
         },
     },
     async beforeMount() {
-        let uid = '';
         await this.$fire.auth.onAuthStateChanged(user => {
             if (!user) {
             this.$router.push('/login')
             } else {
-            uid = user.uid
-                this.$fire.database.ref(`/users/${uid}/info`).once('value')
+            this.uid = user.uid
+                this.$fire.database.ref(`/users/${user.uid}/info`).once('value')
                     .then( (data) => {
                         this.userName = data.val().name
                         this.roomIndex = this.$route.query.roomNumber

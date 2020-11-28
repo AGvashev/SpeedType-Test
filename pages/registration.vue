@@ -62,7 +62,8 @@ export default {
         passwordRepeat: '',
         passwordRules: [
             v => !!v || 'Password is required',
-            v => (v && v.length <= 10) || 'Name must be less than 10 characters',
+            v => (v && v.length <= 10) || 'Password must be less than 10 characters',
+            v => (v && v.length >= 6) || 'The password must be at least 6 characters',
         ],
         passwordRepeatRules: [
             v => !!v || 'Password repeated is required',
@@ -87,7 +88,7 @@ export default {
                     avatarURL: 'default_avatar.png'
                 })
                 await this.$fire.database.ref(`/users/${uid}/results`).set({
-                      gamePlayed: 1,
+                      gamePlayed: 0,
                       bestWpm: 0,
                       bestAcuuracy: 0,
                       bestTime: 0
